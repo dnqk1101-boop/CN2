@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AsynapRous Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+
+        /* Glassmorphism Classes */
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        /* Login Screen */
+        #loginScreen {
+            width: 360px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        #loginScreen h2 {
+            margin-bottom: 20px;
+            color: #4a4a4a;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: #5a6edb;
+        }
+
+        /* App Screen */
+        #appScreen {
+            width: 900px;
+            height: 600px;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(240, 240, 240, 0.8);
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .contact-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .contact-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .contact-item:hover {
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .contact-item.active {
+            background: #fff;
+            border-left: 4px solid #667eea;
+        }
+
+        .contact-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            margin-right: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: #444;
+        }
+
+        .contact-name {
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        /* Main Chat */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .chat-history {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-msg {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .msg-me {
+            background: #667eea;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg-them {
+            background: #f1f0f0;
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .msg-sender {
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 3px;
+            opacity: 0.7;
+        }
+
+        .chat-input {
+            padding: 15px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 10px;
+            background: rgba(250, 250, 250, 0.9);
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+        }
+
+        .chat-input button {
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: none;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        /* Modal */
+        #groupModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 350px;
+        }
+
+        .peer-checkbox {
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Toast Notification */
+        #toastContainer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: rgba(40, 40, 40, 0.95);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 14px;
+            min-width: 250px;
+            animation: slideIn 0.3s ease-out forwards;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .toast-header {
+            font-weight: bold;
+            font-size: 12px;
+            color: #a1c4fd;
+            margin-bottom: 4px;
+        }
+
+        .toast.hiding {
+            animation: slideOut 0.3s ease-in forwards;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toastContainer"></div>
+
+    <!-- Login View -->
+    <!-- Login View -->
+    <div id="loginScreen" class="glass">
+        <img src="images/01_logobachkhoatoi.png" alt="HCMUT Logo" style="width: 80px; height: 80px; margin-bottom: 15px;">
+        <h2>HCMUT Chat Login</h2>
+        <input type="text" id="username" class="input-field" placeholder="Username (e.g. alice)" value="">
+        <input type="password" id="password" class="input-field" placeholder="Password (default 1234)" value="">
+        <input type="text" id="myPort" class="input-field" placeholder="Your Server Port (e.g. 8001)" value="">
+        <input type="text" id="trackerAddr" class="input-field" placeholder="Tracker Address (e.g. 192.168.1.10:8000)" value="127.0.0.1:8000">
+        <button class="btn" onclick="login()">Enter Chat</button>
+    </div>
+
+    <!-- Main Chat App View -->
+    <div id="appScreen" class="glass hidden">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <img src="images/01_logobachkhoatoi.png" alt="HCMUT Logo" style="width: 45px; height: 45px; object-fit: contain; background: white; padding: 2px; border-radius: 50%;">
+                    <div>
+                        <h3 id="lblMyName" style="font-size:16px; margin:0;">Name</h3>
+                        <div style="font-size:12px; color:#666;" id="lblMyPort">Port</div>
+                    </div>
+                </div>
+                <button onclick="showGroupModal()"
+                    style="padding:6px 10px; cursor:pointer; background:#fff; border:1px solid #ccc; border-radius:4px;">+
+                    Group</button>
+            </div>
+            <div class="contact-list" id="contactList">
+                <!-- Contacts rendered here -->
+            </div>
+        </div>
+
+        <div class="chat-area">
+            <div class="chat-header" id="chatHeader">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; opacity: 0.5;">
+                    <img src="images/01_logobachkhoatoi.png" alt="HCMUT Logo" style="width: 120px; filter: grayscale(100%); margin-bottom: 20px;">
+                    <h2 style="margin: 0; color: #333;">Select a chat to start messaging</h2>
+                    <p style="margin: 5px 0 0 0; font-size: 14px;">Connect with your HCMUT peers in real-time</p>
+                </div>
+            </div>
+            <div class="chat-history" id="chatHistoryBox">
+                <!-- Messages go here -->
+            </div>
+            <div class="chat-input hidden" id="chatInputArea">
+                <input type="text" id="msgInput" placeholder="Type a message..."
+                    onkeypress="if(event.key === 'Enter') sendMsg()">
+                <button onclick="sendMsg()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Group Modal -->
+    <div id="groupModal" class="hidden">
+        <div class="modal-content">
+            <h3 style="margin-bottom:15px;">Create Group</h3>
+            <input type="text" id="groupName" class="input-field" placeholder="Group Name">
+            <div id="groupPeersList"
+                style="max-height:150px; overflow-y:auto; margin-bottom:15px; border:1px solid #eee; padding:10px;">
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn" onclick="createGroup()">Create</button>
+                <button class="btn" style="background:#ccc;"
+                    onclick="document.getElementById('groupModal').classList.add('hidden')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let trackerUrl = "http://127.0.0.1:8000";
+        let myName = "";
+        let myPort = "";
+        let myIp = "127.0.0.1";
+
+        // Store all known contacts (peers and groups)
+        // Structure: { "bob": { type: "peer", ip: "127.0.0.1", port: "8002" }, "StudyGroup": { type: "group", members: ["bob", "charlie"] } }
+        let contacts = {};
+
+        // Store chat history
+        // Structure: { "bob": [ {sender: "alice", msg: "hi", isMe: true} ] }
+        let messages = {};
+
+        let activeContact = null;
+    let credentials = ""; // Name of the currently selected contact
+
+        async function login() {
+            myName = document.getElementById("username").value.trim();
+            const pass = document.getElementById("password").value.trim();
+            myPort = document.getElementById("myPort").value.trim();
+
+            if (!myName || !pass || !myPort) { alert("Please fill all fields"); return; }
+
+            credentials = btoa(myName + ":" + pass);
+
+            try {
+                // First, get our own detected local IP from our backend
+                const infoResp = await fetch("/get-my-info");
+                if (infoResp.ok) {
+                    const infoData = await infoResp.json();
+                    myIp = infoData.ip;
+                    console.log("[Login] Detected my local IP:", myIp);
+                }
+
+                const tAddr = document.getElementById("trackerAddr").value.trim();
+                trackerUrl = tAddr.startsWith("http") ? tAddr : "http://" + tAddr;
+                console.log("[Login] Using tracker:", trackerUrl);
+
+                const response = await fetch(trackerUrl + "/login", {
+                    method: "POST",
+                    headers: { "Authorization": "Basic " + credentials }
+                });
+
+                if (response.ok) {
+                    // Register port and ACTUAL local IP to tracker
+                    await fetch(trackerUrl + "/submit-info", {
+                        method: "POST",
+                        body: JSON.stringify({ name: myName, ip: myIp, port: myPort }),
+                        headers: { "Content-Type": "application/json", "Authorization": "Basic " + credentials }
+                    });
+
+                    loadLocalData();
+                    document.getElementById("loginScreen").classList.add("hidden");
+                    document.getElementById("appScreen").classList.remove("hidden");
+                    document.getElementById("lblMyName").innerText = myName;
+                    document.getElementById("lblMyPort").innerText = "Port: " + myPort;
+
+                    // Start background tasks
+                    setInterval(pollTracker, 5000);
+                    setInterval(pollMessages, 2000);
+                    pollTracker(); // Fetch peers immediately
+                } else {
+                    alert("Login failed!");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Error connecting to local server");
+            }
+        }
+
+        async function pollTracker() {
+            try {
+                const response = await fetch(trackerUrl + "/get-list?v=" + new Date().getTime(), { headers: { "Authorization": "Basic " + credentials } });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.peers) {
+                        let changed = false;
+                        for (const [name, info] of Object.entries(data.peers)) {
+                            if (name !== myName && (!contacts[name] || contacts[name].type !== 'peer')) {
+                                contacts[name] = { type: 'peer', ip: info.ip, port: info.port };
+                                if (!messages[name]) messages[name] = [];
+                                changed = true;
+                            } else if (name !== myName) {
+                                // Update IP/Port if changed
+                                contacts[name].ip = info.ip;
+                                contacts[name].port = info.port;
+                            }
+                        }
+                        if (changed) {
+                            renderContacts();
+                            saveLocalData();
+                        }
+                    }
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function pollMessages() {
+            try {
+                const response = await fetch("/get-messages");
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.messages && data.messages.length > 0) {
+                        for (const msgObj of data.messages) {
+                            const sender = msgObj.sender;
+                            const group = msgObj.group;
+                            const text = msgObj.message;
+
+                            let targetConversation = group ? group : sender;
+
+                            // If it's a group we don't know about, we auto-create it locally
+                            if (group && !contacts[group]) {
+                                let initialMembers = msgObj.groupMembers ? msgObj.groupMembers : [sender];
+                                // Make sure I am in the members list
+                                if (!initialMembers.includes(myName)) initialMembers.push(myName);
+                                contacts[group] = { type: 'group', members: initialMembers }; 
+                                renderContacts();
+                            } else if (group && contacts[group] && msgObj.groupMembers) {
+                                // Sync members if group exists but is missing members
+                                let updated = false;
+                                for (let m of msgObj.groupMembers) {
+                                    if (!contacts[group].members.includes(m)) {
+                                        contacts[group].members.push(m);
+                                        updated = true;
+                                    }
+                                }
+                                if (updated) renderContacts();
+                            }
+
+                            if (!messages[targetConversation]) messages[targetConversation] = [];
+                            
+                            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            messages[targetConversation].push({ sender: sender, msg: text, isMe: false, time: timeStr });
+                            saveLocalData();
+                            
+                            showToast(targetConversation, sender, text);
+
+                            if (activeContact === targetConversation) {
+                                renderChat();
+                            }
+                        }
+                    }
+                }
+            } catch (e) { console.error("Poll messages error:", e); }
+        }
+
+        function showToast(conversation, sender, msg) {
+            const container = document.getElementById("toastContainer");
+            const toast = document.createElement("div");
+            toast.className = "toast";
+            
+            const title = conversation === sender ? sender : `${sender} (${conversation})`;
+            let preview = msg.length > 40 ? msg.substring(0, 40) + "..." : msg;
+            
+            toast.innerHTML = `<div class="toast-header">New message from ${title}</div><div>${preview}</div>`;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add("hiding");
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function saveLocalData() {
+            try {
+                localStorage.setItem(`p2p_messages_${myName}`, JSON.stringify(messages));
+                localStorage.setItem(`p2p_contacts_${myName}`, JSON.stringify(contacts));
+            } catch (e) { console.error("Failed to save local data", e); }
+        }
+
+        function loadLocalData() {
+            try {
+                const savedMessages = localStorage.getItem(`p2p_messages_${myName}`);
+                const savedContacts = localStorage.getItem(`p2p_contacts_${myName}`);
+                if (savedMessages) messages = JSON.parse(savedMessages);
+                if (savedContacts) {
+                    const parsedContacts = JSON.parse(savedContacts);
+                    // Merge local groups into contacts
+                    for (const [name, info] of Object.entries(parsedContacts)) {
+                        if (info.type === 'group') contacts[name] = info;
+                    }
+                }
+                renderContacts(); // Ensure UI updates immediately after loading
+            } catch (e) { console.error("Failed to load local data", e); }
+        }
+
+        function renderContacts() {
+            const listDiv = document.getElementById("contactList");
+            listDiv.innerHTML = "";
+
+            for (const [name, info] of Object.entries(contacts)) {
+                const initial = name.charAt(0).toUpperCase();
+                const typeLabel = info.type === 'group' ? '(Group)' : '';
+                const activeClass = name === activeContact ? 'active' : '';
+
+                const div = document.createElement("div");
+                div.className = `contact-item ${activeClass}`;
+                div.onclick = () => selectContact(name);
+                div.innerHTML = `
+                <div class="contact-avatar">${initial}</div>
+                <div class="contact-name">${name} <span style="font-size:10px;color:#888;">${typeLabel}</span></div>
+            `;
+                listDiv.appendChild(div);
+            }
+        }
+
+        function selectContact(name) {
+            activeContact = name;
+            document.getElementById("chatHeader").innerText = name;
+            document.getElementById("chatInputArea").classList.remove("hidden");
+            renderContacts(); // update active class
+            renderChat();
+        }
+
+        function renderChat() {
+            if (!activeContact) return;
+            const box = document.getElementById("chatHistoryBox");
+            box.innerHTML = "";
+
+            const history = messages[activeContact] || [];
+            for (const m of history) {
+                const div = document.createElement("div");
+                div.className = `chat-msg ${m.isMe ? 'msg-me' : 'msg-them'}`;
+
+                // Show sender name only if it's not me and it's a group chat
+                let senderHtml = "";
+                if (!m.isMe && contacts[activeContact].type === 'group') {
+                    senderHtml = `<div class="msg-sender">${m.sender}</div>`;
+                }
+                
+                const timeStr = m.time ? m.time : "";
+                const timeHtml = `<div style="font-size:9px; margin-top:4px; opacity:0.6; text-align:${m.isMe ? 'right' : 'left'}">${timeStr}</div>`;
+
+                div.innerHTML = senderHtml + m.msg + timeHtml;
+                box.appendChild(div);
+            }
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function sendMsg() {
+            if (!activeContact) return;
+            const input = document.getElementById("msgInput");
+            const text = input.value.trim();
+            if (!text) return;
+
+            input.value = "";
+
+            const contact = contacts[activeContact];
+
+            // Save locally
+            if (!messages[activeContact]) messages[activeContact] = [];
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            messages[activeContact].push({ sender: myName, msg: text, isMe: true, time: timeStr });
+            saveLocalData();
+            renderChat();
+
+            if (contact.type === 'peer') {
+                // Send P2P 1-on-1
+                await sendP2P(contact.ip, contact.port, text, null);
+            } else if (contact.type === 'group') {
+                // Send to all members in group
+                for (const member of contact.members) {
+                    if (member !== myName && contacts[member]) {
+                        const p = contacts[member];
+                        await sendP2P(p.ip, p.port, text, activeContact, contact.members);
+                    }
+                }
+            }
+        }
+
+        async function sendP2P(ip, port, text, groupName, groupMembers = null, retries = 3) {
+            const url = `http://${ip}:${port}/send-peer`;
+            const payload = { message: text, sender: myName };
+            if (groupName) {
+                payload.group = groupName;
+                if (groupMembers) payload.groupMembers = groupMembers;
+            }
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: "POST",
+                        body: JSON.stringify(payload),
+                        headers: { "Content-Type": "application/json" }
+                    });
+                    if (response.ok) return true;
+                } catch (e) {
+                    console.error(`Failed to send to ${ip}:${port} (Attempt ${i + 1}/${retries})`, e);
+                    await new Promise(r => setTimeout(r, 1000)); // Wait 1s before retry
+                }
+            }
+            return false;
+        }
+
+        function showGroupModal() {
+            const listDiv = document.getElementById("groupPeersList");
+            listDiv.innerHTML = "";
+
+            let peerCount = 0;
+            for (const [name, info] of Object.entries(contacts)) {
+                if (info.type === 'peer') {
+                    listDiv.innerHTML += `
+                    <label class="peer-checkbox">
+                        <input type="checkbox" value="${name}" class="group-member-chk"> ${name}
+                    </label>
+                `;
+                    peerCount++;
+                }
+            }
+
+            if (peerCount === 0) {
+                listDiv.innerHTML = "<div>No active peers available to form a group.</div>";
+            }
+
+            document.getElementById("groupName").value = "";
+            document.getElementById("groupModal").classList.remove("hidden");
+        }
+
+        function createGroup() {
+            const gName = document.getElementById("groupName").value.trim();
+            if (!gName) { alert("Group name required"); return; }
+
+            const checkboxes = document.querySelectorAll(".group-member-chk:checked");
+            const members = Array.from(checkboxes).map(c => c.value);
+
+            if (members.length === 0) { alert("Select at least one member"); return; }
+            members.push(myName);
+
+            // Add self to members implicitly if needed, but we don't send to ourselves
+            contacts[gName] = { type: 'group', members: members };
+            messages[gName] = [];
+            
+            // Notify other members immediately so they can save the group too
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            messages[gName].push({ sender: myName, msg: "Group created!", isMe: true, time: timeStr });
+            saveLocalData();
+
+            for (const member of members) {
+                if (member !== myName && contacts[member]) {
+                    const p = contacts[member];
+                    sendP2P(p.ip, p.port, "Group created!", gName, members);
+                }
+            }
+
+            document.getElementById("groupModal").classList.add("hidden");
+            renderContacts();
+            selectContact(gName);
+        }
+    </script>
+</body>
+
+</html>
