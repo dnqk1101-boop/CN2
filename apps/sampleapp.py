@@ -24,6 +24,7 @@ import os
 import importlib.util
 import json
 import base64
+import asyncio
 
 from daemon import AsynapRous
 from daemon.utils import get_local_ip
@@ -34,6 +35,13 @@ app = AsynapRous()
 active_peers = {}
 # In-memory storage for messages
 inbox_messages = []
+
+@app.route('/slow-api', methods=['GET'])
+async def slow_api(req, resp):
+    print("Đã nhận request /slow-api, đợi 5s ....")
+    await asyncio.sleep(5)
+    print("[!] Đã xử lý xong /slow-api!")
+    return b'{"message": "Slow task complete!"}'
 
 @app.route('/get-my-info', methods=['GET'])
 def get_my_info(req, resp):
