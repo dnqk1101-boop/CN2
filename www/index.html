@@ -477,6 +477,13 @@
 
                             let targetConversation = group ? group : sender;
 
+                            // If it's a peer we don't know about, we auto-create it locally
+                            if (!group && !contacts[sender]) {
+                                contacts[sender] = { type: 'peer', ip: 'unknown', port: 'unknown' };
+                                if (!messages[sender]) messages[sender] = [];
+                                renderContacts();
+                            }
+
                             // If it's a group we don't know about, we auto-create it locally
                             if (group && !contacts[group]) {
                                 let initialMembers = msgObj.groupMembers ? msgObj.groupMembers : [sender];

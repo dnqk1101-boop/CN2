@@ -1,0 +1,51 @@
+
+POST http://localhost:8000/login
+Authorization: Basic dXNlcjoxMjM0
+
+###
+
+
+POST http://localhost:8000/submit-info
+Content-Type: application/json
+Authorization: Basic dXNlcjoxMjM0
+
+{
+    "name": "KienDoTEST",
+    "ip": "192.168.100.97",
+    "port": "8004"
+}
+
+###
+GET http://localhost:8000/get-list
+Authorization: Basic dXNlcjoxMjM0
+
+###
+
+POST http://localhost:8002/send-peer
+Content-Type: application/json
+
+{
+    "sender": "KienDoTEST",
+    "message": "REST Client Testing"
+}
+
+###
+
+POST http://localhost:8001/send-peer
+Content-Type: application/json
+
+{
+    "sender": "KienDoTEST",
+    "message": "REST Client Testing"
+}
+
+###
+
+POST http://192.168.100.179:8003/send-peer
+Content-Type: application/json
+
+{
+    "sender": "KienDoTEST",
+    "message": "REST Client Testing"
+}
+###
