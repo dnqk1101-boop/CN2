@@ -265,14 +265,14 @@
             color: #fff;
             padding: 12px 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             font-size: 14px;
             min-width: 250px;
             animation: slideIn 0.3s ease-out forwards;
             display: flex;
             flex-direction: column;
         }
-        
+
         .toast-header {
             font-weight: bold;
             font-size: 12px;
@@ -285,13 +285,27 @@
         }
 
         @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
         }
     </style>
 </head>
@@ -302,12 +316,14 @@
     <!-- Login View -->
     <!-- Login View -->
     <div id="loginScreen" class="glass">
-        <img src="images/01_logobachkhoatoi.png" alt="HCMUT Logo" style="width: 80px; height: 80px; margin-bottom: 15px;">
+        <img src="images/01_logobachkhoatoi.png" alt="HCMUT Logo"
+            style="width: 80px; height: 80px; margin-bottom: 15px;">
         <h2>HCMUT Chat Login</h2>
         <input type="text" id="username" class="input-field" placeholder="Username (e.g. alice)" value="">
         <input type="password" id="password" class="input-field" placeholder="Password (default 1234)" value="">
         <input type="text" id="myPort" class="input-field" placeholder="Your Server Port (e.g. 8001)" value="">
-        <input type="text" id="trackerAddr" class="input-field" placeholder="Tracker Address (e.g. 192.168.1.10:8000)" value="127.0.0.1:8000">
+        <input type="text" id="trackerAddr" class="input-field" placeholder="Tracker Address (e.g. 192.168.1.10:8000)"
+            value="">
         <button class="btn" onclick="login()">Enter Chat</button>
     </div>
 
@@ -316,7 +332,8 @@
         <div class="sidebar">
             <div class="sidebar-header">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <img src="images/01_logobachkhoatoi.png" alt="HCMUT Logo" style="width: 45px; height: 45px; object-fit: contain; background: white; padding: 2px; border-radius: 50%;">
+                    <img src="images/01_logobachkhoatoi.png" alt="HCMUT Logo"
+                        style="width: 45px; height: 45px; object-fit: contain; background: white; padding: 2px; border-radius: 50%;">
                     <div>
                         <h3 id="lblMyName" style="font-size:16px; margin:0;">Name</h3>
                         <div style="font-size:12px; color:#666;" id="lblMyPort">Port</div>
@@ -333,8 +350,10 @@
 
         <div class="chat-area">
             <div class="chat-header" id="chatHeader">
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; opacity: 0.5;">
-                    <img src="images/01_logobachkhoatoi.png" alt="HCMUT Logo" style="width: 120px; filter: grayscale(100%); margin-bottom: 20px;">
+                <div
+                    style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; opacity: 0.5;">
+                    <img src="images/01_logobachkhoatoi.png" alt="HCMUT Logo"
+                        style="width: 120px; filter: grayscale(100%); margin-bottom: 20px;">
                     <h2 style="margin: 0; color: #333;">Select a chat to start messaging</h2>
                     <p style="margin: 5px 0 0 0; font-size: 14px;">Connect with your HCMUT peers in real-time</p>
                 </div>
@@ -381,7 +400,7 @@
         let messages = {};
 
         let activeContact = null;
-    let credentials = ""; // Name of the currently selected contact
+        let credentials = ""; // Name of the currently selected contact
 
         async function login() {
             myName = document.getElementById("username").value.trim();
@@ -418,7 +437,7 @@
                         headers: { "Content-Type": "application/json", "Authorization": "Basic " + credentials }
                     });
 
-                    loadLocalData();
+                    // loadLocalData(); // Disable loading old history for a fresh start
                     document.getElementById("loginScreen").classList.add("hidden");
                     document.getElementById("appScreen").classList.remove("hidden");
                     document.getElementById("lblMyName").innerText = myName;
@@ -489,7 +508,7 @@
                                 let initialMembers = msgObj.groupMembers ? msgObj.groupMembers : [sender];
                                 // Make sure I am in the members list
                                 if (!initialMembers.includes(myName)) initialMembers.push(myName);
-                                contacts[group] = { type: 'group', members: initialMembers }; 
+                                contacts[group] = { type: 'group', members: initialMembers };
                                 renderContacts();
                             } else if (group && contacts[group] && msgObj.groupMembers) {
                                 // Sync members if group exists but is missing members
@@ -504,11 +523,11 @@
                             }
 
                             if (!messages[targetConversation]) messages[targetConversation] = [];
-                            
+
                             const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                             messages[targetConversation].push({ sender: sender, msg: text, isMe: false, time: timeStr });
                             saveLocalData();
-                            
+
                             showToast(targetConversation, sender, text);
 
                             if (activeContact === targetConversation) {
@@ -524,13 +543,13 @@
             const container = document.getElementById("toastContainer");
             const toast = document.createElement("div");
             toast.className = "toast";
-            
+
             const title = conversation === sender ? sender : `${sender} (${conversation})`;
             let preview = msg.length > 40 ? msg.substring(0, 40) + "..." : msg;
-            
+
             toast.innerHTML = `<div class="toast-header">New message from ${title}</div><div>${preview}</div>`;
             container.appendChild(toast);
-            
+
             setTimeout(() => {
                 toast.classList.add("hiding");
                 setTimeout(() => toast.remove(), 300);
@@ -603,7 +622,7 @@
                 if (!m.isMe && contacts[activeContact].type === 'group') {
                     senderHtml = `<div class="msg-sender">${m.sender}</div>`;
                 }
-                
+
                 const timeStr = m.time ? m.time : "";
                 const timeHtml = `<div style="font-size:9px; margin-top:4px; opacity:0.6; text-align:${m.isMe ? 'right' : 'left'}">${timeStr}</div>`;
 
@@ -705,7 +724,7 @@
             // Add self to members implicitly if needed, but we don't send to ourselves
             contacts[gName] = { type: 'group', members: members };
             messages[gName] = [];
-            
+
             // Notify other members immediately so they can save the group too
             const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             messages[gName].push({ sender: myName, msg: "Group created!", isMe: true, time: timeStr });
