@@ -125,7 +125,16 @@ def connect_peer(req, resp):
 
 @app.route('/broadcast-peer', methods=['POST'])
 def broadcast_peer(req, resp):
-    return json.dumps({"message": "Broadcast sent"}).encode("utf-8")
+    try:
+        body_data = json.loads(req.body)
+        sender = body_data.get('sender', 'Unknown')
+        msg = body_data.get('message')
+        print(f"[Peer] Broadcast received: {msg} from {sender}")
+        inbox_messages.append({"sender": sender, "message": msg, "group": "Broadcast"})
+        return json.dumps({"message": "Broadcast received"}).encode("utf-8")
+    except Exception as e:
+        resp.status_code = 400
+        return b'{"error": "Bad request"}'
 
 @app.route('/send-peer', methods=['POST'])
 def send_peer(req, resp):
