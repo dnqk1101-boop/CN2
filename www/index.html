@@ -135,11 +135,35 @@
             align-items: center;
             font-weight: bold;
             color: #444;
+            flex-shrink: 0;
         }
 
         .contact-name {
             font-weight: 500;
             font-size: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .section-title {
+            padding: 15px 20px 5px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .unread-badge {
+            background-color: #ff4757;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: auto;
+            flex-shrink: 0;
         }
 
         /* Main Chat */
@@ -401,6 +425,8 @@
         // Structure: { "bob": [ {sender: "alice", msg: "hi", isMe: true} ] }
         let messages = {};
 
+        let unreadCounts = {}; // Track unread messages
+
         let activeContact = null;
         let credentials = ""; // Name of the currently selected contact
 
@@ -534,6 +560,10 @@
 
                             if (activeContact === targetConversation) {
                                 renderChat();
+                            } else {
+                                unreadCounts[targetConversation] = (unreadCounts[targetConversation] || 0) + 1;
+                                saveLocalData();
+                                renderContacts();
                             }
                         }
                     }
@@ -562,6 +592,7 @@
             try {
                 localStorage.setItem(`p2p_messages_${myName}`, JSON.stringify(messages));
                 localStorage.setItem(`p2p_contacts_${myName}`, JSON.stringify(contacts));
+                localStorage.setItem(`p2p_unread_${myName}`, JSON.stringify(unreadCounts));
             } catch (e) { console.error("Failed to save local data", e); }
         }
 
@@ -569,7 +600,9 @@
             try {
                 const savedMessages = localStorage.getItem(`p2p_messages_${myName}`);
                 const savedContacts = localStorage.getItem(`p2p_contacts_${myName}`);
+                const savedUnread = localStorage.getItem(`p2p_unread_${myName}`);
                 if (savedMessages) messages = JSON.parse(savedMessages);
+                if (savedUnread) unreadCounts = JSON.parse(savedUnread);
                 if (savedContacts) {
                     const parsedContacts = JSON.parse(savedContacts);
                     // Merge local groups into contacts
@@ -584,26 +617,53 @@
 
         function renderContacts() {
             const listDiv = document.getElementById("contactList");
-            listDiv.innerHTML = "";
+            listDiv.innerHTML = `
+                <div class="contact-section">
+                    <div class="section-title">Broadcast</div>
+                    <div id="list-broadcast"></div>
+                </div>
+                <div class="contact-section">
+                    <div class="section-title">Groups</div>
+                    <div id="list-group"></div>
+                </div>
+                <div class="contact-section">
+                    <div class="section-title">Peers</div>
+                    <div id="list-peer"></div>
+                </div>
+            `;
 
             for (const [name, info] of Object.entries(contacts)) {
                 const initial = name.charAt(0).toUpperCase();
-                const typeLabel = info.type === 'group' ? '(Group)' : '';
                 const activeClass = name === activeContact ? 'active' : '';
+
+                let unreadHtml = '';
+                if (unreadCounts[name] > 0) {
+                    unreadHtml = `<div class="unread-badge">${unreadCounts[name]}</div>`;
+                }
 
                 const div = document.createElement("div");
                 div.className = `contact-item ${activeClass}`;
                 div.onclick = () => selectContact(name);
                 div.innerHTML = `
                 <div class="contact-avatar">${initial}</div>
-                <div class="contact-name">${name} <span style="font-size:10px;color:#888;">${typeLabel}</span></div>
-            `;
-                listDiv.appendChild(div);
+                <div class="contact-name">${name}</div>
+                ${unreadHtml}
+                `;
+
+                if (info.type === 'broadcast') {
+                    document.getElementById("list-broadcast").appendChild(div);
+                } else if (info.type === 'group') {
+                    document.getElementById("list-group").appendChild(div);
+                } else {
+                    document.getElementById("list-peer").appendChild(div);
+                }
             }
         }
 
         function selectContact(name) {
             activeContact = name;
+            unreadCounts[name] = 0; // Clear unread count when viewing
+            saveLocalData();
             document.getElementById("chatHeader").innerText = name;
             document.getElementById("chatInputArea").classList.remove("hidden");
             renderContacts(); // update active class
